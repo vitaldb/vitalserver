@@ -1,0 +1,479 @@
+extends layout
+
+block css
+  link(rel="stylesheet", href="/static/css/monitoring.css")
+
+block content
+  -bed_arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  -speed_arr = [1, 2, 4, 6];
+  //- Manage VR Side Tab
+  div(id="add-vr-side-tab", class="sidetab")
+    div(class="tab-header pt-1 pb-1")
+      h5(class="tab-title") Manage VR&ensp;
+        a(class="refreshbtn", onclick="edit_vrs(curr_order)")
+          i(class="fa fa-sync-alt")
+        a(href="javascript:void(0)", class="closebtn", onclick="closeTab()")
+          i(class="fa fa-times")
+    div(class="tab-body pt-2", style="font-size:12px;")
+      form(id="form-add-vr", class="row", style="margin:0")
+        select(class='form-control mr-1 mb-1', id="groupfilter", onchange="filter_group(this.value)", style='font-size:12px;height:30px;padding:0;width:100px;display:inline-block;')
+          option(value="all", selected) Group
+          each group in groups
+            option(value=group) #{group}
+          option(value="Unspecified") Unspecified
+        button(type="button", class="btn btn-sm btn-primary", onclick="$('#add-group').modal('show')", style="font-size:12px;height:30px;width:87px;display:inline-block;padding:.25rem;") Add Group
+      div(class="row", style="margin:0")
+        select(class='form-control mr-1', id='vrfilter', onchange='filter_vrs(this.value)', style='font-size:12px;height:30px;padding:0;width:100px;display:inline-block;')
+          option(value="get_myvrs") My VR
+          option(value="get_sharedvrs") Shared VR
+        div(id="vr_menu", class="dropdown ml-auto")
+          button(class="btn btn-light btn-sm dropdown-toggle", type="button", id="actionMenuButton", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false", style="height:30px;font-size:12px")
+            |Actions
+          div(class="dropdown-menu", aria-labelledby="actionMenuButton", style="font-size:12px")
+            a(id="btn-edit-group", class="dropdown-item disabled", onclick="change_group()") Change Group
+            a(id="btn-share", class="dropdown-item disabled", onclick="add_viewer()") Change Permission
+            a(id="btn-edit-filt", class="dropdown-item disabled", onclick="set_filter()") Filter Settings
+            a(id="btn-upgrade-vrs", class="dropdown-item disabled", onclick="update_vrs()") Upgrade VR
+            a(id="btn-del-vrs", class="dropdown-item disabled", onclick="del_beds()") Delete VR
+      div(class="show-scroll mt-1 mb-2", style="max-height: calc(100vh - 137px);overflow-y:scroll;overflow-x:hidden;position:relative")
+        table(id="vr-info", class="table table-sm table-valign-middle table-align-center table-head-fixed", style="margin-bottom:0;table-layout:fixed;")
+          thead
+            tr
+              th(style="width:30%;text-align:left;")
+                div(class='custom-control custom-checkbox', style='margin-top: -1px;')
+                  input(type='checkbox', class='custom-control-input', id='sel-all-bed', onchange='select_all_beds2()')
+                  label(class='custom-control-label', for='sel-all-bed')
+                a(onclick="edit_vrs('bedname', null, true)", onmouseover="show_sort('vrcode')", onmouseout="hide_sort('sort_vrcode')") Name
+                i(id="sort_vrcode", class="fas fa-sort")
+              th(style="width:28%") VR Code
+              th(style="text-align:right")
+            tbody(id="vrs")
+  //- Group Filter
+  div(id="group-filter-side-tab", class="sidetab")
+    div(class="tab-header pt-1 pb-1")
+      h5(class="tab-title") Group
+      a(href="javascript:void(0)", class="closebtn", onclick="closeGFTab();")
+        h5
+          i(class="fa fa-times")
+    div(class="tab-body pt-2", style="font-size:12px;")
+      a(class="dropdown-item", onclick="event.stopPropagation();", style="padding:0.15rem 1rem")
+        div(class="custom-control custom-checkbox", style="width:100%;")
+          input(type="checkbox", class="custom-control-input", id="sel-all-group", onchange="wm_selAllGroup();")
+          label(class="custom-control-label", for="sel-all-group") All
+      if groups.length > 0
+        div(class="dropdown-divider", style="margin: .2rem 0;")
+        each group in groups
+          a(class="dropdown-item", onclick="event.stopPropagation();", onmouseover="show_edit('btn-" + group + "')", onmouseout="hide_edit('btn-" + group + "')", style="padding:0.15rem 1rem")
+            div(class="custom-control custom-checkbox", style="width:80%;height:20px")
+              input(type="checkbox", onchange="wm_selGroup(this)", class="custom-control-input", id=group)
+              label(class="custom-control-label top2", for=group, style="vertical-align:sub;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;") #{group}
+            button(type="button", id="btn-" + group, onclick="edit_group('" + group + "')", class="btn btn-light btn-sm", style="display:none;padding:0 3px;font-size:12px;float:right")
+              i(class="fa fa-sm fa-pencil-alt", aria-hidden="true")
+  //- Add Group Modal
+  div(class="modal fade", id="add-group", tabindex="-1", role="dialog", aria-labelledby="add-group-title", aria-hidden="true", style="z-index:2000")
+    div(class="modal-dialog", role="document")
+      div(class="modal-content")
+        div(class="modal-header")
+          h5(class="modal-title", id="add-group-title") Add Group
+          button(type="button", class="close", data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+        div(class="modal-body")
+          form(id="add-grp")
+            div(class="form-group", style="margin-bottom: 0.5rem!important;")
+              label(for="grpname") Please enter a new groupname.
+              input(type="text", class="form-control", id="grpname", maxlength="255")
+            button(class="btn btn-primary btn-block", style="margin-bottom:5px;") Save
+  //- Change Permission Modal
+  div(class="modal fade", id="edit-permissions", tabindex="-1", role="dialog", aria-labelledby="edit-permissions-title", aria-hidden="true")
+    div(class="modal-dialog", role="document")
+      div(class="modal-content")
+        div(class="modal-header")
+          h5(class="modal-title", id="edit-permissions-title") Change Permission (
+            span(id="p-bedname")
+            |)
+          button(type="button", class="close", data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+        div(class="modal-body", style="font-size:14px;")
+          form(id="edit-permission", class="m-1")
+            input(type="hidden", name="bedname", id="editp-bedname")
+            input(type="hidden", name="vrcode", id="editp-vrcode")
+            input(type="hidden", name="bedid", id="editp-bedid")
+            input(type="hidden", name="job", value="edit_permission")
+            table(class="mt-1 mb-2 table table-sm table-valign-middle")
+              thead
+                th Name
+                th(class="text-center", style="width:70px") View
+                th(class="text-center", style="width:70px") Download
+                th(class="text-center", style="width:70px") Manage
+                //-th(class="text-center", style="width:70px") Own
+                th(class="text-center", style="width:30px")
+              tbody(id="viewers")
+            div(id="editp-alert", class="alert alert-warning p-1 mb-0 d-none", role="alert") You have made changes that you need to save.
+            div(id="editp-btns", class="mt-2 float-right d-none")
+              button(type="submit", class="btn btn-sm btn-primary") Save
+              button(class="btn btn-sm btn-primary", onclick="submit_form('edit-permission', 'edit-permissions')") Done
+              button(id="reset-editp", class="btn btn-sm btn-light", style="width:65px;") Cancel
+            button(type="button", class="close-modal btn btn-sm btn-primary mr-1 float-right", data-dismiss="modal", aria-label="Close") Done
+  //- Change Permission Modal
+  div(class="modal fade", id="share-beds", tabindex="-1", role="dialog", aria-labelledby="share-beds-title", aria-hidden="true")
+    div(class="modal-dialog", role="document")
+      div(class="modal-content")
+        div(class="modal-header")
+          h5(class="modal-title", id="share-beds-title") Change Permission
+          button(type="button", class="close", data-dismiss="modal", aria-label="Close", onclick="$('#share-view').trigger('reset');$('#share-view input[type=checkbox]').prop('checked', false);$('#add-viewer').addClass('d-none');")
+            span(aria-hidden="true") &times;
+        div(class="modal-body")
+          span(style="word-wrap: break-word;") Selected VRs:
+            p(id="selected-beds")
+            input(type="hidden", id="selected-bedids")
+          form(id="share-view")
+            div(class="form-group")
+              |Please select permissions to grant:
+              div(class="form-check")
+                input(class="form-check-input", type="checkbox", name="m-view", id="m-view", value="1", onchange="toggle_add_viewer()")
+                label(class="form-check-label", for="m-view")
+                  |View
+              div(class="form-check")
+                input(class="form-check-input", type="checkbox", name="m-download", id="m-download", value="2", onchange="toggle_add_viewer()")
+                label(class="form-check-label", for="m-download")
+                  |Download
+              div(class="form-check")
+                input(class="form-check-input", type="checkbox", name="m-manage", id="m-manage", value="4", onchange="toggle_add_viewer()")
+                label(class="form-check-label", for="m-manage")
+                  |Manage
+            div(id="add-viewer", class="form-group d-none", style="width:100%")
+              label(for="viewerid") Enter user IDs to share the selected VRs.
+              input(type="text", class="form-control mr-3", name="viewerid", id="viewerid", placeholder="User IDs separated by comma")
+            button(type="submit", class="btn btn-primary btn-block", style="margin-bottom:5px;") Share
+  //- Device Settings
+  div(class="modal fade", id="dev-setting", tabindex="-1", role="dialog", aria-labelledby="dev-setting-title", aria-hidden="true")
+    div(class="modal-dialog", role="document", style="max-width:40rem;")
+      div(class="modal-content")
+        div(class="modal-header")
+          h5(class="modal-title", id="dev-setting-title") Bed Settings
+          button(type="button", class="close", data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+        form(id="form-dev-setting")
+          div(class="modal-body", style="font-size:14px;")
+            input(type="hidden", name="job", value="edit_dev")
+            input(type="hidden", name="dev-setting-vrcode", value="")
+            input(type="hidden", name="dev-setting-bedid", value="")
+            input(type="hidden", name="dev-setting-bedname", value="")
+            textarea(class="form-control d-none", name="dev-advanced-setting", rows=20)
+            table(id="dev-list-tbl", class="table table-sm table-no-border mb-1")
+              thead
+                tr
+                  th(width="20%") Device Type
+                  th(width="20%") Name
+                  th(width="35%") Port
+                  th(width="10%") Y Cable
+                  th(width="15%")
+              tbody(id="dev-list")
+                tr(class="device-form d-none", id="device-form")
+                  td
+                    select(class="form-control", name="device-type", onchange="get_device_name($('#device-form-1'),$(this).val())", style="font-size:14px;height:35px;")
+                      option(value="", selected, disabled)
+                      each dev in devices
+                        option(value=dev.type) #{dev.type}
+                  td
+                    input(class="form-control", type="text", name="device-name", style="font-size:14px;")
+                  td
+                    div(class="form-row")
+                      div(class="col-sm-6")
+                        select(class="form-control", name="device-port", style="font-size:14px;height:35px;", onchange="add_newport(this)")
+                          option(value="", selected disabled)
+                          option(value="LU") LU
+                          option(value="LU1") LU1
+                          option(value="LU2") LU2
+                          option(value="LU3") LU3
+                          option(value="LU4") LU4
+                          option(value="RU") RU
+                          option(value="RU1") RU1
+                          option(value="RU2") RU2
+                          option(value="RU3") RU3
+                          option(value="RU4") RU4
+                          option(value="LL") LL
+                          option(value="LL1") LL1
+                          option(value="LL2") LL2
+                          option(value="LL3") LL3
+                          option(value="LL4") LL4
+                          option(value="RL") RL
+                          option(value="RL1") RL1
+                          option(value="RL2") RL2
+                          option(value="RL3") RL3
+                          option(value="RL4") RL4
+                          option(value="F1") F1
+                          option(value="F2") F2
+                          option(value="F3") F3
+                          option(value="F4") F4
+                          option(value="C1") C1
+                          option(value="C2") C2
+                          option(value="C3") C3
+                          option(value="C4") C4
+                          option(value="COM1") COM1
+                          option(value="COM2") COM2
+                          option(value="COM3") COM3
+                          option(value="COM4") COM4
+                          option(value="COM5") COM5
+                          option(value="COM6") COM6
+                          option(value="COM7") COM7
+                          option(value="COM8") COM8
+                          option(value="COM9") COM9
+                          option(value="COM10") COM10
+                          option(value="ACM0") ACM0
+                          option(value="other") Other
+                      div(class="col-sm-6")
+                        input(type="hidden", value="", name="device-port-other", class="form-control", placeholder="Portname", style="font-size:14px; height:35px;")
+                  td(style="text-align:center")
+                    input(type="checkbox", name="device-ycable", style="vertical-align:-webkit-baseline-middle;")
+                  td(class="dev-btns pl-4")
+            div(id="add-dev-btn", style="width:20%;padding-right:.3rem;padding-left:.3rem;")
+              button(type="button", class="add-device btn btn-primary btn-lg btn-block", style="height:37px;padding:.3rem 1rem;font-size:15px;text-align:left", onclick="add_device_form()")
+                i(class="fa fa-plus")
+                |&nbsp; Add
+          div(class="modal-footer")
+              button(id="dev-setting-toggle-btn", type="button", class="btn btn-primary mr-auto", onclick="toggle_dev_advanced_settings()") Advanced Settings
+              button(type="button", class="btn btn-secondary", data-dismiss="modal") Close
+              button(type="submit", class="btn btn-primary") Save
+  //- Filter Settings
+  div(class="modal fade", id="filt-setting", tabindex="-1", role="dialog", aria-labelledby="filt-setting-title", aria-hidden="true")
+    div(class="modal-dialog", role="document", style="max-width:40rem;")
+        div(class="modal-content")
+            div(class="modal-header")
+                h5(class="modal-title", id="filt-setting-title") Filter Settings
+                button(type="button", class="close", data-dismiss="modal", aria-label="Close", onclick="$('#form-filt-setting').trigger('reset')")|
+                  span(aria-hidden="true") &times;
+            form(id="form-filt-setting")
+                div(class="modal-body", style="font-size:14px;")
+                    input(type="hidden", name="job", value="edit_filt")
+                    input(type="hidden", name="filt-setting-bedid", value="")
+                    input(type="hidden", name="filt-setting-bedname", value="")
+                    div(id="filt-bed-list", class="m-2 d-none", style="word-wrap: break-word;") Selected Beds:
+                        span(id="filt-selected-beds")
+                    div(id="filt-list", class="m-2")
+                        div(style="padding-bottom:4.8px;") Filters
+                          each filt in filters
+                            div(class="form-check", style="padding-top:4.8px;")
+                              input(type="checkbox", name="filters[]", value=filt.modname, class="form-check-input", onchange="check_filters(this)")
+                              label(class="form-check-label", for="filters[]") #{filt.name}
+                div(class="modal-footer")
+                    button(type="button", class="btn btn-secondary", data-dismiss="modal", onclick="$('#form-filt-setting').trigger('reset')") Close
+                    button(type="submit", class="btn btn-primary") Save
+  //- Add Event
+  div(class="modal fade", id="add-event", tabindex="-1", role="dialog", aria-labelledby="add-event-title", aria-hidden="true", style="z-index:2000")
+    div(class="modal-dialog", role="document")
+      div(class="modal-content")
+        div(class="modal-header")
+          h5(class="modal-title", id="add-event-title") Add Event
+          button(type="button", class="close", data-dismiss="modal", aria-label="Close", onclick="$('#add-evt').trigger('reset')")
+            span(aria-hidden="true") &times;
+        div(class="modal-body")
+          form(id="add-evt")
+            input(type="hidden", id="add-evt-dt")
+            input(type="hidden", id="add-evt-userid")
+            input(type="hidden", id="add-evt-bedname")
+            input(type="hidden", id="add-evt-vrcode")
+            div(class="form-group", style="margin-bottom: 0.5rem!important;")
+              label(id='evt-label', for="evt") Please enter an event message.
+              input(type="text", class="form-control", id="evt")
+            button(class="btn btn-primary btn-block", style="margin-bottom:5px;") Save
+  //- Edit Group Modal
+  div(class="modal container-addRoom fade", id="edit-group", tabindex="-1", role="dialog", aria-labelledby="edit-group-title", aria-hidden="true")
+    div(class="modal-dialog", role="document")
+        div(class="modal-content")
+            div(class="modal-header")
+                h5(class="modal-title", id="edit-group-title") Edit Group Name
+                button(type="button", class="close", data-dismiss="modal", aria-label="Close")
+                  span(aria-hidden="true") &times;
+            div(class="modal-body")
+              form(id="group-edit")
+                  input(type="hidden", id="prev-groupname")
+                  div(class="form-group", style="margin-bottom: 0.5rem!important;")
+                      label(for="new-groupname") Enter new group name.
+                      input(type="text", class="form-control", id="new-groupname" )
+                  button(class="btn btn-primary btn-block") Save
+              a(id="del-group", class="text-danger float-right", href="#", style="font-size:13px") Click here to delete group
+  //- Change Group Modal - move VRs to selected group
+  div(class="modal container-addRoom fade", id="change-group", tabindex="-1", role="dialog", aria-labelledby="change-group-title", aria-hidden="true")
+      div(class="modal-dialog", role="document")
+        div(class="modal-content")
+          div(class="modal-header")
+            h5(class="modal-title", id="change-group-title") Change Group
+            button(type="button", class="close", data-dismiss="modal", aria-label="Close")
+              span(aria-hidden="true") &times;
+          div(class="modal-body")
+            form(id="move-vrs")
+              p Choose a group to move selected VR(s).
+              span(style="word-wrap: break-word;") Selected VR(s):
+                p(id="selected-beds2")
+                input(type="hidden", id="selected-bedids2")
+              div(class="form-group")
+                label(for="groupname") Group
+                select(name="groupname", id="group-name", class="form-control sel-g", onchange="add_newgroup(this,'add-new-group')")
+                  option(selected disabled) Select group...
+                  each group in groups
+                    option(value=group) #{group}
+                  option(style="color:#0000ff;", value="add") Add Group
+              div(class="form-group d-none", id="add-new-group")
+                  label(for="new-group") Enter a new group name
+                  input(type="text", class="form-control", name="new-group", id="new-group-name")
+              button(id="move-btn", class="btn btn-primary btn-block", type="submit", style="float:right;", disabled) Change
+  //- Change Group Modal - move shared VR to selected group
+  div(class="modal container-addRoom fade", id="cg-shared", tabindex="-1", role="dialog", aria-labelledby="cg-shared-title", aria-hidden="true")
+    div(class="modal-dialog", role="document")
+      div(class="modal-content")
+        div(class="modal-header")
+          h5(class="modal-title", id="cg-shared-title") Change Group (
+            span(id="cg-bedname")
+            |)
+          button(type="button", class="close", data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+        div(class="modal-body")
+          form(id="cg-shared-vr")
+            input(type="hidden", id="cg-shared-bedname")
+            input(type="hidden", id="cg-shared-bedid")
+            div(class="form-group")
+              label(for="groupname") Group
+              select(name="groupname", id="cg-groupname", class="form-control sel-g", onchange="add_newgroup(this,'cg-add-group')")
+                option(selected disabled) Select group...
+                each group in groups
+                  option(value=group) #{group}
+                option(style="color:#0000ff;", value="add") Add Group
+            div(class="form-group d-none", id="cg-add-group")
+              label(for="new-group") Enter a new group name
+              input(type="text", class="form-control", name="new-group", id="cg-new-group")
+            button(id="cg-move-btn", class="btn btn-primary btn-block", type="submit", style="float:right;", disabled) Change
+  div(class="d-none")
+    img(id="img-device-on", src="/static/img/web-monitoring/dev-on2.png")
+    img(id="img-device-off", src="/static/img/web-monitoring/dev-off2.png")
+    img(id="img-device-con", src="/static/img/web-monitoring/dev-con2.png")
+    img(id="img-top-patient", src="/static/img/web-monitoring/top-patient.png")
+    img(id="img-offline", src="/static/img/discon.svg")
+    img(id="img-vitaldb-logo", src="/static/img/logo-white.png")
+    div(id="wm-member") 1
+    div(id="wm-now") #{now}
+    input(type="hidden", value=vr_version, id="vver_latest")
+  div(class="page-footer fixed-bottom bg-dark py-1 text-center text-light", style="display: none; font-size: .875rem;") * Remote monitoring is intended for data verification and review. It should not be used for clinical purpose. /)
+  div(class="wm-layout wm-filter btn-toolbar", id="toolbar", role="toolbar", style="position:sticky; top:92px;background-color: white; z-index:10;")
+    button(id="group-filter-btn", type="button", class="btn btn-light btn-sm mr-1", onclick="openGFTab();", style="height:30px;")
+      i(class="fa fa-filter", aria-hidden="true")
+      |&nbsp; Group
+    button(id="add-vr-btn", type="button", class="btn btn-light btn-sm mr-1", onclick="openTab();", style="height:30px;")
+      i(class="fa fa-cog", aria-hidden="true")
+      |&nbsp; VR
+    button(id="wm-ptlabel", type="button", class="btn btn-light btn-sm mr-1", style="height:30px;width:32px;", onclick="wm_patientOn(this)")
+      i(class="fa fa-male", style="font-size:1.2em", aria-hidden="true")
+    button(id="wm-offline", type="button", class="btn btn-light btn-sm mr-1 pr-1 pl-1", title="Filter offline monitors", style="height:30px;width:32px;padding:0 !important;", onclick="wm_offlineOn(this)", wifi-mode="2")
+      img(id="wifi-img", src="/static/img/wifi.png", width="27", style="vertical-align:middle;")
+    span(id="rt-clock", class="mr-auto ml-auto")
+    span(style="font-size:14px;margin-top:8px", id="room-status")
+    div(class="form-group-sm mr-1 ml-1", role="group", style="display:flex;")
+      select(name="sel-col", class="form-control sel-col")
+        each opt in bed_arr
+          option(value=opt) #{opt}
+    div(class="btn-group mr-1", role="group")
+      button(type="button", class="btn btn-light btn-sm", id="wm-refresh", onclick="location.reload()", style="height:30px")
+        i(class="fa fa-redo-alt", aria-hidden="true")
+    div(class="btn-group", role="group")
+      button(type="button", class="btn btn-light btn-sm", id="wm-expand", onclick="wm_expandWindow()", style="height:30px;")
+        i(class="fa fa-expand-alt", aria-hidden="true")
+  div(id="wm-rooms", class="wm-rooms")
+    each room, index in rooms
+      div(class="wm-room", id=room.bedid, title=room.bedname + " (" + room.vrcode + ") " + room.vrver, group=room.group, shareid=room.vrcode, name=room.bedname, websocket="1", latency="1")
+        div(class="dropdown-menu context-menu", id="context-menu", style="width:11rem;color:#868e96;font-size:14px;")
+          if room.mode == 4 || room.mode == 0
+            a(class="dropdown-item cmd-" + room.vrcode, onclick="event.stopPropagation();render_vr_setting('" + room.bedid + "');$(this).parent().removeClass('show').hide();")
+              div(style="display:inline-block;width:10px;text-align:center")
+                i(class="fa fa-sm fa-cog")
+              |&nbsp; Network Settings
+            a(class="dropdown-item cmd-" + room.vrcode, onclick="event.stopPropagation();render_dev_settings_form('" + room.bedname + "','" + room.bedid + "','" + room.vrcode + "');$(this).parent().removeClass('show').hide();")
+              div(style="display:inline-block;width:10px;text-align:center")
+                i(class="fa fa-sm fa-laptop-medical")
+              |&nbsp; Device Settings
+            a(class="dropdown-item cmd-" + room.vrcode, onclick="event.stopPropagation();render_filt_settings_form('" + room.bedname + "','" + room.bedid + "','" + room.vrcode + "');$(this).parent().removeClass('show').hide();")
+              div(style="display:inline-block;width:10px;text-align:center")
+                img(src="/static/img/function.png",width=13,style="vertical-align:middle;filter:invert(52%)")
+              |&nbsp; Filter Settings
+            a(class="dropdown-item cmd-" + room.vrcode, onclick="event.stopPropagation();show_log('" + room.bedid + "');$(this).parent().removeClass('show').hide();")
+              div(style="display:inline-block;width:10px;text-align:center")
+                i(class="fas fa-sm fa-bug")
+              |&nbsp; View Logs
+            div(class="dropdown-divider")
+            a(class="dropdown-item chg-permission-" + room.vrcode, onclick="event.stopPropagation();edit_permissions('" + room.bedname + "','" + room.bedid + "','" + room.vrcode + "');$(this).parent().removeClass('show').hide();")
+              div(style="display:inline-block;width:10px;text-align:center")
+                i(class="fa fa-sm fa-user-plus")
+              |&nbsp; Change Permission
+            a(class="dropdown-item manage-group", onclick="event.stopPropagation();move_bed('" + room.group + "','" + room.bedname + "','" + room.bedid + "');$(this).parent().removeClass('show').hide();")
+              div(style="display:inline-block;width:10px;text-align:center")
+                i(class="fa fa-sm fa-pencil-alt")
+              |&nbsp; Change Group
+            a(class="dropdown-item cmd-" + room.vrcode, onclick="event.stopPropagation();update_vr('" + room.vrcode + "', '" + room.bedname + "');$(this).parent().removeClass('show').hide();")
+              div(style="display:inline-block;width:10px;text-align:center")
+                img(src="/static/img/update_vr.png", width="12", style="vertical-align:middle;")
+              |&nbsp; Upgrade VR
+            a(class="dropdown-item remove-bed cmd-" + room.vrcode, onclick="event.stopPropagation();del_bed_by_cmd('" + room.bedname + "','" + room.bedid + "','" + room.vrcode + "');$(this).parent().removeClass('show').hide();")
+              div(style="display:inline-block;width:10px;text-align:center")
+                i(class="fa fa-sm fa-times")
+              |&nbsp; Delete Bed
+            div(class="dropdown-divider")
+            a(class="dropdown-item cmd-" + room.vrcode, onclick="event.stopPropagation();restart_vr('" + room.vrcode + "','" + room.bedname + "');$(this).parent().removeClass('show').hide();")
+              div(style="display:inline-block;width:10px;text-align:center")
+                i(class="fa fa-sm fa-sync-alt")
+              |&nbsp; Restart VR
+            a(class="dropdown-item cmd-" + room.vrcode, onclick="event.stopPropagation();reboot_vr('" + room.vrcode + "','" + room.bedname + "');$(this).parent().removeClass('show').hide();")
+              div(style="display:inline-block;width:10px;text-align:center")
+                i(class="fa fa-sm fa-power-off")
+              |&nbsp; Reboot
+          if room.mode == 1
+            a(class="dropdown-item manage-group", onclick="event.stopPropagation();move_bed('" + room.group + "','" + room.bedname + "','" + room.bedid + "');$(this).parent().removeClass('show').hide();")
+              div(style="display:inline-block;width:10px;text-align:center")
+                i(class="fa fa-sm fa-pencil-alt")
+              |&nbsp; Change Group
+            div(class="dropdown-divider")
+            a(class="dropdown-item remove-bed", onclick="event.stopPropagation();del_bed('" + room.bedid + "','" + room.bedname + "');$(this).parent().removeClass('show').hide();")
+              div(style="display:inline-block;width:10px;text-align:center")
+                i(class="fa fa-sm fa-times")
+              |&nbsp; Remove Bed
+        div(class="wm-info d-none", style="text-align:right;position:absolute;right:5px;top:5px;z-index:3;")
+          button(type="button", class="btn btn-dark align-middle", id="add-evt-" + room.bedid, onclick="add_event('" + room.bedname + "','" + room.bedid + "','" + room.vrcode + "')", style="opacity:.8;font-size:14px;")
+            i(class="fa fa-plus", aria-hidden="true", style="color:#4294C6")
+            span(style="color:white")|&nbsp;Add Event
+          div(id="exit-" + room.bedid, class="d-none ml-2 align-middle")
+            a(onclick="wm_onClickRoom('" + room.bedid + "');", style="color:white;", title="Press ESC to exit the fullscreen")
+              i(class="fa fa-2x fa-compress", style="background-color:rgba(1,0,0,0)")
+          span(class="text-secondary", id="update-stat-" + room.vrcode)
+        canvas(width="800", height="705", style="touch-action:manipulate;") Your web browser does not support HTML5 Canvas.
+        div(class="wm-control", style="position:absolute;z-index:3;bottom:0px;left:0px;")
+          div(class="row")
+            div(class="col-12 wm-slider")
+              input(type="range", min="-14400", max="0", value="0")
+          div(class="row", style="margin: 0 0 7px 5px;")
+            button(type="button", class="btn btn-transparent wm-first", title="Go back to the beginning of the case", disabled)
+              i(class="fa fa-fast-backward", aria-hidden="true")
+            button(type="button", class="btn btn-transparent wm-prev", title="Rewind 7 secs")
+              i(class="fa fa-step-backward", aria-hidden="true")
+            button(type="button", class="btn btn-transparent wm-pause")
+              i(class="fa fa-pause", aria-hidden="true")
+            button(type="button", class="btn btn-transparent wm-resume", style="display: none;")
+              i(class="fa fa-play", aria-hidden="true")
+            button(type="button", class="btn btn-transparent wm-next", title="Proceed 7 secs")
+              i(class="fa fa-step-forward", aria-hidden="true")
+            button(type="button", class="btn btn-transparent wm-last", title="Go back to real time monitoring", disabled)
+              i(class="fa fa-fast-forward", aria-hidden="true")
+            label(for="play-speed", class="d-inline-block", style="color:white;margin:0;padding: 10px 15px;") Play Speed
+            select(class="form-control form-control-sm sel-dark d-inline-block play-speed", id="play-speed", onchange="setPlaySpeed(this.value)", style="width:100px; margin:3px 5px;")
+              each opt in speed_arr
+                option(value=opt) x#{opt}
+            span(class="wm-time", style="margin:8px 0 0 15px;")
+            span(class="wm-timeX", style="margin:8px 0 0 15px;")
+    div(class="text-muted mt-2 pl-2", style="font-size: .875rem;") * Remote monitoring is intended for data verification and review. It should not be used for clinical purpose.
+
+block js
+  script.
+    var websocket_host = "#{websocket_host}";
+    var admin_yn = "#{user.admin_yn}";
+  script(src='/static/vendor/socket.io/socket.io.min.js')
+  script(src='/static/vendor/pako/pako.js')
+  script(src='/static/js/wm-common.js')
+  script(src='/static/js/websocket.js')
+  script(src='/static/js/browser_check.js')

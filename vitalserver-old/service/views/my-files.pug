@@ -1,0 +1,90 @@
+extends layout
+
+block css
+    link(rel="stylesheet", href="/static/css/my-files.css")
+
+block content
+    div(class="row", id="myfiles-row", style="font-size:14px;height: calc(100vh - 160px); overflow-y: hidden;")
+        div(class="col-2 mt-2 show-scroll", style="overflow-x:hidden;overflow-y:scroll;height: calc(100vh - 167px)")
+            div(class="form-floating mb-1")
+                input(type="date", class="form-control form-control-sm", id="sdate")
+                label(for="sdate") Start Date
+            div(class="form-floating mb-1")
+                input(type="date", class="form-control form-control-sm", id="edate")
+                label(for="edate") End Date
+            div(class="form-floating mb-1", onchange="request_data()")
+                select(id="bedlist", class="form-select show-scroll")
+                    option(value="all") ALL
+                    each bedname in bednames
+                        option(value=bedname) #{bedname}
+                label(for="bedlist") Bed
+            div(class="input-group mb-1")
+                input(type="text", class="form-control", id="bedname", placeholder="Search file")
+                div(class="input-group-append")
+                    button(id="search", class="btn btn-sm btn-outline-primary", onclick="request_data()", style="width:33px;height:33px;")
+                        i(class="fas fa-search")
+            div(class="input-group")
+                select(id="operator", class="custom-select", onchange="filter_files_by_trks()", style="height:33px;border-bottom-left-radius:0")
+                    option AND
+                    option OR
+                div(class="input-group-append")
+                    button(class="btn btn-sm btn-outline-danger", type="button", onclick="clear_trk()", style="height:33px;border-bottom-right-radius:0") Clear
+            ul(class="form-control list-group list-group-flush mb-1 show-scroll", id="selected-trks", style="height:120px;overflow-x:hidden;overflow-y:scroll;resize:vertical;border-top:none;border-top-left-radius:0;border-top-right-radius:0")
+            div(class="input-group mb-1")
+                input(type="text", class="form-control", id="trkname", placeholder="Search track", oninput="filter_trk(this.value)")
+                div(class="input-group-append")
+                    button(id="trk-add-btn", class="btn btn-sm btn-outline-primary", onclick="add_trk()", style="height:33px;") Add
+                button(id="trk-add-all-btn", class="btn btn-sm btn-outline-primary", onclick="add_trk(true)", style="height:33px;") Add All
+            select(id="trklist", class="form-select", multiple style="height: calc(100vh - 585px) !important;")
+        div(id="file-div", class="col-5 mt-2")
+            div(id="btn-container", class="btn-toolbar mb-2", role="toolbar")
+                button(type="button", class="btn btn-light3 btn-sm mr-1 flexible-btn", onclick="download_files()", style="height:33px;", disabled)
+                    i(class="fa fa-download", aria-hidden="true") 
+                    |&nbsp;&nbsp;Download
+                //- button(type="button", class="btn btn-light3 btn-sm mr-1 flexible-btn", onclick="delete_files()", style="height:33px;", disabled)
+                //-     i(class="fa fa-trash", aria-hidden="true") 
+                //-     |&nbsp;&nbsp;Delete
+                div(class="ml-auto d-inline-block")
+                    button(class="btn btn-light3 btn-sm mr-1", onclick="request_data()", style="height:33px;")
+                        i(class="fas fa-sync-alt")
+                    div(class="btn btn-sm", id="file-count", style="min-width:100px;height:33px;margin-right:10px;cursor:default;background-color:#f2f2f2;")
+            div(id="file-list", class="show-scroll", style="height: calc(100vh - 210px);overflow-y:scroll;")
+                table(id="file-table", class="table table-sm my-files-table table-hover", style="table-layout:fixed;min-width:550px;")
+                    thead
+                        th(width="30")
+                            div(class="custom-control custom-checkbox", style="display:inline-block; line-height:2.1;")
+                                input(type="checkbox", class="custom-control-input", id="sel-all", onchange="select_all()")
+                                label(class="custom-control-label", for="sel-all")
+                        th
+                            a(href="#", onmouseover="change_sort_icon(0)", onmouseout="hide_sort_icon(0)", onclick="sort_cases(0)", style="color:black;") 
+                                |Name
+                                img(id="0_sort", border="0", style="margin-top:-2px;")
+                        th(width="150")
+                            a(href="#", onmouseover="change_sort_icon(1)", onmouseout="hide_sort_icon(1)", onclick="sort_cases(1)", style="color:black;")
+                                |Start Time
+                                img(id="1_sort", border="0", style="margin-top:-2px;")
+                        th(width="70")
+                            a(href="#", onmouseover="change_sort_icon(2)", onmouseout="hide_sort_icon(2)", onclick="sort_cases(2)", style="color:black;")
+                                |End Time
+                                img(id="2_sort", border="0", style="margin-top:-2px;")
+                        th(width="70", style="text-align:right;")
+                            a(href="#", onmouseover="change_sort_icon(3)", onmouseout="hide_sort_icon(3)", onclick="sort_cases(3)", style="color:black;")
+                                img(id="3_sort", border="0", style="margin-top:-2px;")
+                                | Uploaded
+                        th(width="80", style="text-align:right;")
+                            a(href="#", onmouseover="change_sort_icon(4)", onmouseout="hide_sort_icon(4)", onclick="sort_cases(4)", style="color:black;")
+                                img(id="4_sort", border="0", style="margin-top:-2px;")
+                                | Size
+                    tbody
+        div(id="file-view", class="col-5 mt-2")
+            iframe(class="d-none", src="/webview", frameborder="0", width="100%", height="100%", style="-webkit-transform:scale(1); -moz-transform:scale(1); -ms-transform:scale(1);transform:scale(1);", id="iframe_preview", name="preview")
+                |This browser does not support iframe.
+
+block js
+    script(src='/static/js/my-files.js')
+    script(src='/static/js/browser_check.js')
+
+block footer
+    footer(class="mt-3 py-3")
+        div(class="container-fluid")
+            p(class="mb-0") Copyright © 2016-2022 VitalDB. Department of Anesthesiology and Pain Medicine, Seoul National University College of Medicine, Seoul, Korea.

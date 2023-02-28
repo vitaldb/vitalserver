@@ -1,0 +1,21 @@
+*** 기존 싱크 폴더 (config.js에 file_folder) 설정이 사라지고 service\vital_files 에 고정으로 파일이 싱크되도록 변경되었습니다. ***
+*** 기존 싱크 폴더에 있는 모든 폴더 또는 파일을 service\vital_files 로 복사 붙여넣기 해주세요. ***
+
+<서버 셋팅 및 설치>
+1. node 설치
+	..\install\node-v12.16.2-x64.msi
+2. redis 설치
+	..\install\Redis-x64-3.0.504.msi
+3. config 설정 
+	service\include\config.js
+	file_folder : path to store .vital files
+	hospcode : input hospital code
+
+<Upgrade VR 기능 사용 방법>
+* service\vr_release 폴더에 setup.최신버전.exe (윈도우용) 또는 pivr_xxxxxx_xxxxxx (리눅스용) 파일을 추가해주세요.
+
+<인트라넷용 VR 셋팅 방법>
+1. 최신 Vital Recorder 설치
+2. Settings에서 Edit VR.conf file 클릭
+3. VR.conf 파일에 SERVER_IP=[인트라넷설치 PC의 IP]:[port] 입력
+4. 저장 후 Settings Cancel이나 닫기 버튼으로 닫아주고 Vital Recorder 재시작 (OK 버튼 클릭 시 VR.conf file이 이전 상태로 리셋됩니다.)

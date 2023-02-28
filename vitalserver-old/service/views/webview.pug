@@ -1,0 +1,54 @@
+doctype html
+html
+  head
+    link(rel="stylesheet", href="/static/css/webview.css")
+    link(rel="stylesheet", href="/static/css/template.min.css")
+    link(rel="stylesheet", href="/static/vendor/font-awesome/css/font-awesome.min.css")
+
+body(style="font-size:14px;")
+    div(id="div_preview", style="width:100%; height: 100%; overflow-y: auto; overflow-x: hidden;display:none;")
+        table(width="100%", cellpadding=0, cellspacing=0, style="font-size:14px;")
+            tr
+                td(id="span_preview_caseid")
+                td(align="right")
+                    span(id="span_status")
+                    div(id="btn_preview", style="display:none;")
+                        button(type="button", id="fit_width", class="btn btn-gray btn-sm mr-2 mb-2", style="background:#505050;height:25px;line-height:1px;text-decoration:none;", onclick="fit(0)") Fit Width
+                        button(type="button", id="fit_100px", class="btn btn-gray btn-sm mr-2 mb-2", style="background:#505050;height:25px;line-height:1px;text-decoration:none;", onclick="fit(1)") 100 Pixel/s
+                        button(type="button", id="convert_view", class="btn btn-gray btn-sm mr-2 mb-2", style="background:#505050;height:25px;line-height:1px;text-decoration:none;", onclick="draw_moniview()") Monitor View
+        canvas(id="file_preview", width="100%", height="100%") Your web browser does not support HTML5 Canvas
+        canvas(id="moni_preview", width="100%", height="100%") Your web browser does not support HTML5 Canvas
+        div(id="moni_control", style="position:absolute;z-index:3;bottom:34px;left:0px;display:none;")
+            div(class="row")
+                div(class="col-12")
+                    input(id="moni_slider", type="range", min="0", max="0", value="0", onchange="slide_to(this.value)", oninput="slide_on(this.value)")
+            div(class="row", style="margin: 0 0 7px 5px;")
+                button(type="button", class="btn btn-transparent", title="Go to the beginning", onclick="rewind(get_caselen())")
+                    i(class="fa fa-fast-backward", aria-hidden="true") &nbsp;
+                button(type="button", class="btn btn-transparent", title="Rewind 1 frame", onclick="rewind()")
+                    i(class="fa fa-step-backward", aria-hidden="true") &nbsp;
+                button(id="moni_pause", type="button", class="btn btn-transparent", onclick="pause_resume()", style="display: none;")
+                    i(class="fa fa-pause", aria-hidden="true")
+                button(id="moni_resume", type="button", class="btn btn-transparent", onclick="pause_resume()")
+                    i(class="fa fa-play", aria-hidden="true") &nbsp;
+                button(type="button", class="btn btn-transparent", title="Proceed 1 frame", onclick="proceed()")
+                    i(class="fa fa-step-forward", aria-hidden="true") &nbsp;
+                button(type="button", class="btn btn-transparent", title="Go to the end", onclick="proceed(get_caselen())")
+                    i(class="fa fa-fast-forward", aria-hidden="true") &nbsp;
+                span(id="casetime", style="color:#FFFFFF;padding:10px 12px;")
+                label(for="play-speed", class="d-inline-block ml-auto", style="color:white;margin:0;padding: 10px 15px;") Play Speed
+                select(class="form-control form-control-sm sel-dark d-inline-block play-speed", id="play-speed", onchange="set_playspeed(this.value)", style="width:100px; margin:3px 5px;")
+                    option(value="1") x1
+                    option(value="2") x2
+                    option(value="4") x4
+                    option(value="6") x6
+        div(class="d-none")
+            img(src="/static/img/edit.png", id="editImg")
+
+script(src="/static/vendor/jquery/jquery.min.js")
+script(src="/static/js/bootstrap.min.js")
+script(src="/static/js/webview.js")
+script(src="/static/vendor/pako/pako.js")
+script.
+    var path = "#{path}";
+    requestVital(path);

@@ -1,0 +1,60 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    meta(name="description", content="VitalDB")
+    meta(name="author", content="VitalDB")
+    meta(name="keywords", content="VitalDB")
+    link(rel="shortcut icon", href="/static/favicon.ico")
+    meta(http-equiv="Content-Security-Policy")
+    title #{title} : VitalDB
+    link(rel="stylesheet", href="/static/css/template.min.css")
+    link(rel="stylesheet", href="/static/vendor/fontawesome-5.12.1/css/fontawesome.min.css")
+    link(rel="stylesheet", href="/static/vendor/fontawesome-5.12.1/css/all.min.css")
+    block css
+  body(id=body_id class="d-flex flex-column")
+    nav(id="top", class="navbar navbar-expand-md navbar-dark fixed-top bg-gradient")
+      div(class="container-fluid px-0")
+        a(class="navbar-brand text-hide d-block", href="/") VitalDB
+        button(class="navbar-toggler", type="button", data-toggle="collapse", data-target="#navbarNavDropdown", aria-controls="navbarNavDropdown", aria-expanded="false", aria-label="Toggle navigation")
+          span(class="navbar-toggler-icon")
+        div(class="collapse navbar-collapse", id="navbarNavDropdown")
+          ul(class="navbar-nav ml-auto")
+            li(class="nav-item " + monitor_menu)
+              a(class="nav-link", href="/") Web Monitoring
+            li(class="nav-item " + file_menu)
+              a(class="nav-link", href="/my-files") My Files
+            if user.admin_yn == "Y"
+              li(class="nav-item dropdown " + config_menu)
+                a(class="nav-link dropdown-toggle", id="config", role="button", data-toggle="dropdown", aria-expanded="false")
+                  |Manage
+                div(class="dropdown-menu", aria-labelledby="config", style="font-size:14px")
+                  a(class="dropdown-item", href="/manage-user") Users
+                  a(class="dropdown-item", href="/manage-config") Server
+                  a(class="dropdown-item", href="/manage-hl7") HL7
+            if title != "Home"
+              li(class="nav-item dropdown " + account_menu)
+                a(class="nav-link dropdown-toggle", id="navbarDropdown", role="button", data-toggle="dropdown", aria-expanded="false")
+                  |#{user.id}
+                div(class="dropdown-menu", aria-labelledby="navbarDropdown", style="font-size:14px")
+                  a(class="dropdown-item", href="/manage-account") Manage My Account
+                  a(class="dropdown-item", href="/logout") Logout
+    header
+      div(class="container-fluid", style="height:43px;")
+        div(class="row")
+          div(class="col-10")
+            div(class="col-2")
+    div(id="content")
+      div(class="container-fluid")
+        block content
+
+        script(src='/static/vendor/jquery/jquery.min.js')
+        script(src='/static/vendor/bootstrap/js/bootstrap.bundle.min.js')
+        script(src='/static/vendor/holder.js/holder.min.js')
+        script(src='/static/vendor/jQuery-BinaryTransport/jquery.binarytransport.js')
+        script(src='/static/vendor/jquery-easing/jquery.easing.min.js')
+        script(src='/static/vendor/js-cookie/js.cookie.js')
+        script(src='/static/js/template.js')
+        block js
+    block footer

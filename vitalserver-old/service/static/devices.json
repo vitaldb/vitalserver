@@ -1,0 +1,214 @@
+[
+    {
+        "type": "SNUADC",
+        "name": "SNUADC"
+    },
+    {
+        "type": "SNUADCM",
+        "name": "SNUADCM"
+    },
+    {
+        "type": "SNUBTN",
+        "name": "SNUBTN"
+    },
+    {
+        "type": "DI-149",
+        "name": "DI-149"
+    },
+    {
+        "type": "DI-155",
+        "name": "DI-155"
+    },
+    {
+        "type": "DI-1100",
+        "name": "DI-1100"
+    },
+    {
+        "type": "DI-1120",
+        "name": "DI-1120"
+    },
+    {
+        "type": "USB-6008",
+        "name": "USB-6008"
+    },
+    {
+        "type": "Intellivue",
+        "name": "Intellivue"
+    },
+    {
+        "type": "Solar8000",
+        "name": "Solar8000"
+    },
+    {
+        "type": "Bx50",
+        "name": "Bx50"
+    },
+    {
+        "type": "Dashx000",
+        "name": "Dashx000"
+    },
+    {
+        "type": "Dash2500",
+        "name": "Dash2500"
+    },
+    {
+        "type": "BSM",
+        "name": "BSM"
+    },
+    {
+        "type": "HL7GW",
+        "name": "HL7GW"
+    },
+    {
+        "type": "Radical7",
+        "name": "Radical7"
+    },
+    {
+        "type": "Root",
+        "name": "Root"
+    },
+    {
+        "type": "Primus",
+        "name": "Primus"
+    },
+    {
+        "type": "Datex-Ohmeda",
+        "name": "Datex-Ohmeda"
+    },
+    {
+        "type": "Flow-i",
+        "name": "Flow-i"
+    },
+    {
+        "type": "Orchestra",
+        "name": "Orchestra"
+    },
+    {
+        "type": "Agilia",
+        "name": "Agilia"
+    },
+    {
+        "type": "SpaceCom",
+        "name": "SpaceCom"
+    },
+    {
+        "type": "Pion",
+        "name": "Pion"
+    },
+    {
+        "type": "BIS",
+        "name": "BIS"
+    },
+    {
+        "type": "A2000",
+        "name": "A2000"
+    },
+    {
+        "type": "Invos",
+        "name": "Invos"
+    },
+    {
+        "type": "ANIMonitor",
+        "name": "ANIMonitor"
+    },
+    {
+        "type": "ANIMonitor2",
+        "name": "ANIMonitor2"
+    },
+    {
+        "type": "PLEM100",
+        "name": "PLEM100"
+    },
+    {
+        "type": "CAI",
+        "name": "CAI"
+    },
+    {
+        "type": "TwitchView",
+        "name": "TwitchView"
+    },
+    {
+        "type": "TOFScan",
+        "name": "TOFScan"
+    },
+    {
+        "type": "FMS",
+        "name": "FMS"
+    },
+    {
+        "type": "Hemosphere",
+        "name": "Hemosphere"
+    },
+    {
+        "type": "Vigilance",
+        "name": "Vigilance"
+    },
+    {
+        "type": "EV1000",
+        "name": "EV1000"
+    },
+    {
+        "type": "ClearSight",
+        "name": "ClearSight"
+    },
+    {
+        "type": "Vigileo",
+        "name": "Vigileo"
+    },
+    {
+        "type": "CardioQ",
+        "name": "CardioQ"
+    },
+    {
+        "type": "LiDCO",
+        "name": "LiDCO"
+    },
+    {
+        "type": "AirTom",
+        "name": "AirTom"
+    },
+    {
+        "type": "HemoVista",
+        "name": "HemoVista"
+    },
+    {
+        "type": "MedibusX",
+        "name": "MedibusX"
+    },
+    {
+        "type": "Demo",
+        "name": "Demo"
+    },
+    {
+        "type": "SKNA",
+        "name": "SKNA"
+    },
+    {
+        "type": "MEKICS",
+        "name": "MEKICS"
+    },
+    {
+        "type": "X001",
+        "name": "X001"
+    },
+    {
+        "type": "X002",
+        "name": "X002"
+    },
+    {
+        "type": "X003",
+        "name": "X003"
+    },
+    {
+        "type": "VueLink",
+        "name": "VueLink"
+    },
+    {
+        "type": "Link+",
+        "name": "Link+"
+    },
+    {
+        "type": "Infinity",
+        "name": "Infinity"
+    }
+]

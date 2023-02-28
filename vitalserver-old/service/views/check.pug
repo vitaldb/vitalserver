@@ -1,0 +1,30 @@
+extends layout
+
+block css
+  link(rel="stylesheet", href="/static/css/check.css")
+
+block content
+  div(class="container")
+    div(class="alert alert-danger alert-dismissible fade", class=show, role="alert")
+      i(class="fa fa-fw fa-exclamation-triangle" aria-hidden="true")
+      span &nbsp;Incorrect User ID or Password.
+    div(class="modal fade show", id="login-modal", tabindex="-1", role="dialog", aria-labelledby="check" aria-hidden="true", style="display:block")
+      div(class="modal-dialog modal-dialog-centered", role="document", style="max-width: 25rem;")
+        div(class="modal-content")
+          div(class="modal-header")
+            h5(class="modal-title", id="login") Login
+          div(class="modal-body")
+            form(novalidate="", class="", action="/check", method="post" id="login-form")
+              div(class="form-group")
+                label(for="mb_id", class="") User ID
+                input(name="mb_id", placeholder="Enter User ID", required="", type="text", class="form-control", value="", id="mb_id", autofocus)
+                label(for="mb_password", class="") Password
+                input(name="mb_password", placeholder="Enter Password", required="", type="password", class="form-control", value="", id="mb_password")
+              div(class="w-100 mb-3")
+              button(type="submit", class="btn btn-primary btn-block" id="loginsubmit") Login
+
+block js
+  script.
+    var websocket_host = "#{websocket_host}";
+  script(src='/static/vendor/socket.io/socket.io.min.js')
+  script(src='/static/js/connect.js')
