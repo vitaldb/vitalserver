@@ -1,3 +1,12 @@
+// written by Hyung-Chul Lee (vital@snu.ac.kr)
+// Download minimum_vitalserver.js from the github repository.
+// Please download and nodejs server (LTS version) from https://nodejs.org.
+// In the folder containing minimum_vitalserver.js, run "npm install socket.io@2 express".
+// Execute "node minimum_vitalserver.js".
+// Allow access when the warning pops up.
+// Please add "SERVER_IP=127.0.0.1:3000" to vr.conf.
+// Run Vital Recorder and Add Device (eg. Demo)
+// Open the browser and connect to "http://localhost:3000".
 const app = require('express')();
 const server = require('http').createServer(app);
 const io = require("socket.io")(server);
